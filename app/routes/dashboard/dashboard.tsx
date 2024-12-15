@@ -34,66 +34,56 @@ export default function Dashboard() {
         <div className="h-full px-3 py-4 overflow-y-auto bg-gray-50 dark:bg-gray-800">
           <ul className="space-y-2 font-medium">
             <li>
-              <a
-                href=""
+              <Link
+                to={"/dashboard"}
                 className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group"
               >
                 <span className="ms-3 text-3xl">RegAct</span>
-              </a>
+              </Link>
             </li>
             <li>
-              <a
-                href=""
+              <Link
+                to={"/dashboard"}
                 className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group"
               >
                 <span className="flex-1 ms-3 whitespace-nowrap">Reportes</span>
                 <span className="inline-flex items-center justify-center px-2 ms-3 text-sm font-medium text-gray-800 bg-gray-100 rounded-full dark:bg-gray-700 dark:text-gray-300">
                   Pro
                 </span>
-              </a>
+              </Link>
               <ul className="space-y-2 font-light ml-4">
                 <li>
                   <Link
-                    to="reporte/clientes"
+                    to={"reporte/interacciones"}
+                    className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group"
+                  >
+                    <span className="flex-1 ms-3 whitespace-nowrap">
+                      Interacciones
+                    </span>
+                  </Link>
+                </li>
+              </ul>
+            </li>
+            <li>
+              <Link
+                to={"/dashboard"}
+                className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group"
+              >
+                <span className="flex-1 ms-3 whitespace-nowrap">
+                  Mantenimiento
+                </span>
+              </Link>
+
+              <ul className="space-y-2 font-light ml-4">
+                <li>
+                  <Link
+                    to={"mantenimiento/clientes"}
                     className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group"
                   >
                     <span className="flex-1 ms-3 whitespace-nowrap">
                       Clientes
                     </span>
                   </Link>
-                </li>
-                <li>
-                  <a
-                    href="#"
-                    className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group"
-                  >
-                    <span className="flex-1 ms-3 whitespace-nowrap">
-                      Interacciones
-                    </span>
-                  </a>
-                </li>
-              </ul>
-            </li>
-            <li>
-              <a
-                href="#"
-                className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group"
-              >
-                <span className="flex-1 ms-3 whitespace-nowrap">
-                  Mantenimiento
-                </span>
-              </a>
-
-              <ul className="space-y-2 font-light ml-4">
-                <li>
-                  <a
-                    href="#"
-                    className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group"
-                  >
-                    <span className="flex-1 ms-3 whitespace-nowrap">
-                      Clientes
-                    </span>
-                  </a>
                 </li>
                 <li>
                   <Link
@@ -116,43 +106,33 @@ export default function Dashboard() {
                   </Link>
                 </li>
                 <li>
-                  <a
-                    href="#"
+                  <Link
+                    to={"mantenimiento/licencias"}
                     className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group"
                   >
                     <span className="flex-1 ms-3 whitespace-nowrap">
                       Licencias
                     </span>
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="#"
-                    className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group"
-                  >
-                    <span className="flex-1 ms-3 whitespace-nowrap">
-                      Ajustes
-                    </span>
-                  </a>
+                  </Link>
                 </li>
               </ul>
             </li>
             <li>
-              <a
-                href="#"
+              <Link
+                to={"/"}
                 className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group"
               >
                 <span className="flex-1 ms-3 whitespace-nowrap">
                   Cerar Sesion
                 </span>
-              </a>
+              </Link>
             </li>
           </ul>
         </div>
       </aside>
 
-      <div className="p-4 sm:ml-64">
-        <div className="p-4 border-2 border-gray-200 border-dashed rounded-lg dark:border-gray-700">
+      <div className="p-4 sm:ml-64 h-fit">
+        <div className="p-4 border-2 border-gray-200 border-dashed rounded-lg dark:border-gray-700 h-fit">
           <Outlet />
         </div>
       </div>

@@ -3,9 +3,9 @@ import type { Route } from "./+types/empresas";
 import { Link, useNavigate } from "react-router";
 
 export async function loader() {
-  const res = await fetch("http://localhost:8090/api/v1/usuario/lista");
+  const res = await fetch("http://localhost:8090/api/v1/licencia/lista");
   if (!res.ok) {
-    throw new Error("No se pudo obtener los datos de usuarios");
+    throw new Error("No se pudo obtener los datos de licencias");
   }
   const data = await res.json();
 
@@ -14,97 +14,67 @@ export async function loader() {
     throw new Error("No se pudo obtener los datos de tipos");
   }
   const tipo = await resTipo.json();
-  return { data: data, tipo: tipo };
+
+  const resEmpresa = await fetch("http://localhost:8090/api/v1/empresa/lista");
+  if (!res.ok) {
+    throw new Error("No se pudo obtener los datos de empresas");
+  }
+  const empresa = await resEmpresa.json();
+
+  const resUsuario = await fetch("http://localhost:8090/api/v1/usuario/lista");
+  if (!res.ok) {
+    throw new Error("No se pudo obtener los datos de usuarios");
+  }
+  const usuario = await resUsuario.json();
+
+  return { data: data, tipo: tipo, empresa: empresa, usuario: usuario };
 }
 
 export default function Usuarios({ loaderData }: { loaderData: any }) {
-  const [dataUsuarios, setDataUsuarios] = useState(loaderData.data);
-
   const navigate = useNavigate();
 
   function modal(numItem: number) {
     const modalElement = document.getElementById("default-modal");
     modalElement?.classList.toggle("hidden");
-
     if (numItem === -1) {
       const formElement = document.getElementById(
-        "formRegistroUsuario"
+        "formAgregarLicencia"
       ) as HTMLFormElement | null;
       formElement?.reset();
       return;
     }
-
-    const idUsuarioElement = document.getElementById(
-      "idUsuario"
-    ) as HTMLInputElement;
-    idUsuarioElement.value = loaderData.data[numItem].idUsuario;
-    const nombreElement = document.getElementById("nombre") as HTMLInputElement;
-    nombreElement.value = loaderData.data[numItem].nombreUsuario;
-    const correoElement = document.getElementById("correo") as HTMLInputElement;
-    correoElement.value = loaderData.data[numItem].correoUsuario;
-    const fechaNacimientoElement = document.getElementById(
-      "fechaNacimiento"
-    ) as HTMLInputElement;
-    fechaNacimientoElement.value =
-      loaderData.data[numItem].fechaNacimientoUsuario;
-    const telefonoElement = document.getElementById(
-      "telefono"
-    ) as HTMLInputElement;
-    telefonoElement.value = loaderData.data[numItem].telefonoUsuario;
-    const claveElement = document.getElementById("clave") as HTMLInputElement;
-    claveElement.value = loaderData.data[numItem].telefonoUsuario;
-    const confirmarClaveElement = document.getElementById(
-      "confirmarClave"
-    ) as HTMLInputElement;
-
-    confirmarClaveElement.value = loaderData.data[numItem].telefonoUsuario;
-    const activoElement = document.getElementById("activo") as HTMLInputElement;
-    loaderData.data[numItem].estadoUsuario &&
-      ((activoElement.value = "1"), (activoElement.checked = true));
-    const sElement = document.getElementById("sUsu") as HTMLInputElement;
-    sElement.value = loaderData.data[numItem].saltUsuario;
-    const tipoElement = document.getElementById("tipo") as HTMLInputElement;
-    tipoElement.value = loaderData.data[numItem].tipoUsuario.idTipo;
   }
 
-  async function handleSubmitActualizaUsuario(event) {
-    const date = new Date(event.target.fechaNacimiento.value);
-    let dia = date.getDate() < 10 ? "0" + date.getDate() : date.getDate();
-    let mes =
-      date.getMonth() + 1 < 10
-        ? "0" + (date.getMonth() + 1)
-        : date.getMonth() + 1;
-    let anio = date.getFullYear();
-    let userDate = anio + "-" + mes + "-" + dia;
+  async function handleSubmitRegistraLicencia(event: any) {
     event.preventDefault();
-    const res = await fetch("http://localhost:8090/api/v1/usuario/registra", {
+    const date = new Date(event.target.fecha.value).toISOString().slice(0, 19);
+    const dateAhora = new Date().toISOString().slice(0, 19);
+    const res = await fetch("http://localhost:8090/api/v1/licencia/registra", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        idUsuario: event.target.idUsuario.value,
-        nombreUsuario: event.target.nombre.value,
-        correoUsuario: event.target.correo.value,
-        claveUsuario: event.target.clave.value,
-        telefonoUsuario: event.target.telefono.value,
-        saltUsuario: event.target.sUsu.value,
-        fechaNacimientoUsuario: userDate,
-        tipoUsuario: {
+        rucEmpresa: {
+          rucEmpresa: event.target.empresa.value,
+        },
+        idUsuario: {
+          idUsuario: event.target.usuario.value,
+        },
+        idTipo: {
           idTipo: event.target.tipo.value,
         },
-        estadoUsuario: event.target.activo.checked,
       }),
     });
 
     if (res.ok) {
-      alert("Usuario actualizado correctamente");
-      document.getElementById("formRegistroUsuario")?.reset();
+      alert("Se ha agregado licencia correctamente");
+      document.getElementById("formAgregarLicencia")?.reset();
       const modalElement = document.getElementById("default-modal");
       modalElement?.classList.toggle("hidden");
       navigate(0);
     } else {
-      alert("Error al actualizar usuario");
+      alert("Error al agregar licencia");
     }
   }
 
@@ -145,12 +115,12 @@ export default function Usuarios({ loaderData }: { loaderData: any }) {
               </form>
             </div>
             <div className="w-full md:w-auto flex flex-col md:flex-row space-y-2 md:space-y-0 items-stretch md:items-center justify-end md:space-x-3 flex-shrink-0">
-              <Link
-                to="/dashboard/mantenimiento/usuarios/registro"
+              <button
+                onClick={() => modal(0)}
                 className="text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm px-5 py-2.5 text-center me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
               >
                 Agregar
-              </Link>
+              </button>
             </div>
           </div>
           <div className="overflow-x-auto">
@@ -158,61 +128,49 @@ export default function Usuarios({ loaderData }: { loaderData: any }) {
               <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                 <tr>
                   <th scope="col" className="px-4 py-3">
-                    idUsuario
+                    Número
                   </th>
                   <th scope="col" className="px-4 py-3">
-                    Nombre Usuario
+                    Empresa
                   </th>
                   <th scope="col" className="px-4 py-3">
-                    Correo Usuario
+                    Usuario
                   </th>
                   <th scope="col" className="px-4 py-3">
-                    Tipo Usuario
+                    Tipo
                   </th>
                   <th scope="col" className="px-4 py-3">
-                    Acciones
+                    Fecha Creacion
+                  </th>
+                  <th scope="col" className="px-4 py-3">
+                    Fecha Vencimiento
                   </th>
                 </tr>
               </thead>
               <tbody>
-                {dataUsuarios &&
-                  dataUsuarios.map((usuario: any, index: number) => (
+                {loaderData.data &&
+                  loaderData.data.map((licencia: any, index: number) => (
                     <tr className="border-b dark:border-gray-700">
                       <th
                         scope="row"
                         className="px-4 py-3 font-medium text-gray-900 whitespace-nowrap dark:text-white"
                       >
-                        {usuario.idUsuario}
+                        {licencia.numLicencia}
                       </th>
-                      <td className="px-4 py-3">{usuario.nombreUsuario}</td>
-                      <td className="px-4 py-3">{usuario.correoUsuario}</td>
                       <td className="px-4 py-3">
-                        {usuario.tipoUsuario.descripcionTipo}
+                        {licencia.rucEmpresa.razonSocialEmpresa}
                       </td>
                       <td className="px-4 py-3">
-                        {usuario.estadoUsuario === true ? (
-                          <button
-                            type="button"
-                            className="text-white bg-green-700 hover:bg-green-800 focus:outline-none focus:ring-4 focus:ring-green-300 font-medium rounded-full text-sm px-5 py-2.5 text-center me-2 mb-2 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800"
-                          >
-                            Activo
-                          </button>
-                        ) : (
-                          <button
-                            type="button"
-                            className="text-white bg-red-700 hover:bg-red-800 focus:outline-none focus:ring-4 focus:ring-red-300 font-medium rounded-full text-sm px-5 py-2.5 text-center me-2 mb-2 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-900"
-                          >
-                            Inactivo
-                          </button>
-                        )}
-
-                        <button
-                          type="button"
-                          className="text-white bg-yellow-400 hover:bg-yellow-500 focus:outline-none focus:ring-4 focus:ring-yellow-300 font-medium rounded-full text-sm px-5 py-2.5 text-center me-2 mb-2 dark:focus:ring-yellow-900"
-                          onClick={() => modal(index)}
-                        >
-                          Editar
-                        </button>
+                        {licencia.idUsuario.nombreUsuario}
+                      </td>
+                      <td className="px-4 py-3">
+                        {licencia.idTipo.descripcionTipo}
+                      </td>
+                      <td className="px-4 py-3">
+                        {new Date(licencia.fechaCreacion).toLocaleString()}
+                      </td>
+                      <td className="px-4 py-3">
+                        {new Date(licencia.fechaVencimiento).toLocaleString()}
                       </td>
                     </tr>
                   ))}
@@ -340,7 +298,7 @@ export default function Usuarios({ loaderData }: { loaderData: any }) {
           <div className="relative bg-white rounded-lg shadow dark:bg-gray-700">
             <div className="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
               <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
-                Editar Usuario
+                Agregar Licencia
               </h3>
               <button
                 type="button"
@@ -368,142 +326,76 @@ export default function Usuarios({ loaderData }: { loaderData: any }) {
             </div>
             <div className="mx-auto my-10 h-fit w-full bg-white rounded-lg shadow dark:border md:mt-0 sm:max-w-md xl:p-0 dark:bg-gray-800 dark:border-gray-700">
               <div className="p-6 space-y-4 md:space-y-6 sm:p-8 h-fit">
-                <h1 className="text-xl font-bold text-center leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white">
-                  Actualiza Usuario
-                </h1>
                 <form
                   className="space-y-4 md:space-y-6"
                   method="POST"
-                  id="formRegistroUsuario"
-                  onSubmit={handleSubmitActualizaUsuario}
+                  id="formAgregarLicencia"
+                  onSubmit={handleSubmitRegistraLicencia}
                 >
                   <div>
                     <label
-                      htmlFor="idUsuario"
+                      htmlFor="empresa"
                       className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
                     >
-                      ID Usuario
+                      Empresa
                     </label>
-                    <input
-                      type="text"
-                      name="idUsuario"
-                      id="idUsuario"
-                      className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                      placeholder="TAMAÑO : 6"
-                      required
-                    />
+                    <select
+                      id="empresa"
+                      name="empresa"
+                      className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                    >
+                      <option selected>Elegir Empresa</option>
+                      {loaderData.empresa &&
+                        loaderData.empresa.map((empresa: any) => (
+                          <option
+                            key={empresa.rucEmpresa}
+                            value={empresa.rucEmpresa}
+                          >
+                            {empresa.razonSocialEmpresa}
+                          </option>
+                        ))}
+                    </select>
                   </div>
+
                   <div>
                     <label
-                      htmlFor="nombre"
+                      htmlFor="tipo"
                       className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
                     >
-                      Nombres del Usuario
+                      Usuario
                     </label>
-                    <input
-                      type="text"
-                      name="nombre"
-                      id="nombre"
-                      placeholder="Nombre y Apellido genérico"
-                      className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label
-                      htmlFor="correo"
-                      className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                    <select
+                      id="usuario"
+                      name="usuario"
+                      className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                     >
-                      Correo del usuario
-                    </label>
-                    <input
-                      type="email"
-                      name="correo"
-                      id="correo"
-                      placeholder="ejemplo@empresa.com.pe"
-                      className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label
-                      htmlFor="fechaNacimiento"
-                      className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                    >
-                      Fecha de Nacimiento
-                    </label>
-                    <input
-                      type="date"
-                      name="fechaNacimiento"
-                      id="fechaNacimiento"
-                      className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label
-                      htmlFor="telefono"
-                      className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                    >
-                      Telefono del Usuario
-                    </label>
-                    <input
-                      type="number"
-                      name="telefono"
-                      id="telefono"
-                      placeholder="987548452"
-                      className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label
-                      htmlFor="clave"
-                      className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                    >
-                      Clave de usuario
-                    </label>
-                    <input
-                      type="password"
-                      name="clave"
-                      id="clave"
-                      placeholder="*********"
-                      className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                      required
-                    />
-                  </div>
-                  <input type="hidden" value={""} name="sUsu" id="sUsu" />
-                  <div>
-                    <label
-                      htmlFor="confirmarClave"
-                      className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                    >
-                      Clave de usuario
-                    </label>
-                    <input
-                      type="password"
-                      name="confirmarClave"
-                      id="confirmarClave"
-                      placeholder="*********"
-                      className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                      required
-                    />
+                      <option selected>Elegir Usuario</option>
+                      {loaderData.tipo &&
+                        loaderData.usuario.map((usuario: any) => (
+                          <option
+                            key={usuario.idUsuario}
+                            value={usuario.idUsuario}
+                          >
+                            {usuario.nombreUsuario}
+                          </option>
+                        ))}
+                    </select>
                   </div>
                   <div>
                     <label
                       htmlFor="tipo"
                       className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
                     >
-                      Tipo Usuario
+                      Tipo Licencia
                     </label>
                     <select
                       id="tipo"
                       name="tipo"
                       className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                     >
-                      <option selected>Tipo de Usuario</option>
+                      <option selected>Tipo de Licencia</option>
                       {loaderData.tipo &&
-                        loaderData.tipo.map((tipo) => (
+                        loaderData.tipo.map((tipo: any) => (
                           <option key={tipo.idTipo} value={tipo.idTipo}>
                             {tipo.descripcionTipo}
                           </option>
@@ -511,25 +403,25 @@ export default function Usuarios({ loaderData }: { loaderData: any }) {
                     </select>
                   </div>
                   <div>
-                    <label className="inline-flex items-center cursor-pointer">
-                      <input
-                        type="checkbox"
-                        id="activo"
-                        name="activo"
-                        value={0}
-                        className="sr-only peer"
-                      />
-                      <div className="relative w-11 h-6 bg-gray-200 rounded-full peer peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
-                      <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">
-                        Activo
-                      </span>
+                    <label
+                      htmlFor="fecha"
+                      className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                    >
+                      Fecha de Vencimiento
                     </label>
+                    <input
+                      type="date"
+                      name="fecha"
+                      id="fecha"
+                      className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                      required
+                    />
                   </div>
                   <button
                     type="submit"
-                    className=" text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm px-5 py-2.5 text-center me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 w-full"
+                    className="text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm px-5 py-2.5 text-center me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 w-full"
                   >
-                    Actualizar Usuario
+                    Registrar Licencia
                   </button>
                 </form>
               </div>

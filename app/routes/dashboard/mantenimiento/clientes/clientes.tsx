@@ -3,9 +3,9 @@ import type { Route } from "./+types/empresas";
 import { Link, useNavigate } from "react-router";
 
 export async function loader() {
-  const res = await fetch("http://localhost:8090/api/v1/usuario/lista");
+  const res = await fetch("http://localhost:8090/api/v1/cliente/lista");
   if (!res.ok) {
-    throw new Error("No se pudo obtener los datos de usuarios");
+    throw new Error("No se pudo obtener los datos de clientes");
   }
   const data = await res.json();
 
@@ -14,12 +14,16 @@ export async function loader() {
     throw new Error("No se pudo obtener los datos de tipos");
   }
   const tipo = await resTipo.json();
-  return { data: data, tipo: tipo };
+
+  const resEmpresa = await fetch("http://localhost:8090/api/v1/empresa/lista");
+  if (!res.ok) {
+    throw new Error("No se pudo obtener los datos de tipos");
+  }
+  const empresa = await resEmpresa.json();
+  return { data: data, tipo: tipo, empresa };
 }
 
 export default function Usuarios({ loaderData }: { loaderData: any }) {
-  const [dataUsuarios, setDataUsuarios] = useState(loaderData.data);
-
   const navigate = useNavigate();
 
   function modal(numItem: number) {
@@ -28,46 +32,31 @@ export default function Usuarios({ loaderData }: { loaderData: any }) {
 
     if (numItem === -1) {
       const formElement = document.getElementById(
-        "formRegistroUsuario"
+        "formActualizaCliente"
       ) as HTMLFormElement | null;
       formElement?.reset();
       return;
     }
 
-    const idUsuarioElement = document.getElementById(
-      "idUsuario"
-    ) as HTMLInputElement;
-    idUsuarioElement.value = loaderData.data[numItem].idUsuario;
-    const nombreElement = document.getElementById("nombre") as HTMLInputElement;
-    nombreElement.value = loaderData.data[numItem].nombreUsuario;
-    const correoElement = document.getElementById("correo") as HTMLInputElement;
-    correoElement.value = loaderData.data[numItem].correoUsuario;
-    const fechaNacimientoElement = document.getElementById(
-      "fechaNacimiento"
-    ) as HTMLInputElement;
-    fechaNacimientoElement.value =
-      loaderData.data[numItem].fechaNacimientoUsuario;
-    const telefonoElement = document.getElementById(
-      "telefono"
-    ) as HTMLInputElement;
-    telefonoElement.value = loaderData.data[numItem].telefonoUsuario;
-    const claveElement = document.getElementById("clave") as HTMLInputElement;
-    claveElement.value = loaderData.data[numItem].telefonoUsuario;
-    const confirmarClaveElement = document.getElementById(
-      "confirmarClave"
-    ) as HTMLInputElement;
-
-    confirmarClaveElement.value = loaderData.data[numItem].telefonoUsuario;
-    const activoElement = document.getElementById("activo") as HTMLInputElement;
-    loaderData.data[numItem].estadoUsuario &&
-      ((activoElement.value = "1"), (activoElement.checked = true));
-    const sElement = document.getElementById("sUsu") as HTMLInputElement;
-    sElement.value = loaderData.data[numItem].saltUsuario;
-    const tipoElement = document.getElementById("tipo") as HTMLInputElement;
-    tipoElement.value = loaderData.data[numItem].tipoUsuario.idTipo;
+    let element = document.getElementById("numCliente") as HTMLInputElement;
+    element.value = loaderData.data[numItem].numCliente || "";
+    element = document.getElementById("nombre") as HTMLInputElement;
+    element.value = loaderData.data[numItem].nombresCliente || "";
+    element = document.getElementById("correo") as HTMLInputElement;
+    element.value = loaderData.data[numItem].correoCliente || "";
+    element = document.getElementById("fechaNacimiento") as HTMLInputElement;
+    element.value = loaderData.data[numItem].fechaNacimientoCliente || "";
+    element = document.getElementById("telefono") as HTMLInputElement;
+    element.value = loaderData.data[numItem].telefonoCliente || "";
+    element = document.getElementById("tipoDocumento") as HTMLInputElement;
+    element.value = loaderData.data[numItem].tipoDocumentocliente?.idTipo || -1;
+    element = document.getElementById("numeroDocumento") as HTMLInputElement;
+    element.value = loaderData.data[numItem].documentoCliente || "";
+    element = document.getElementById("empresa") as HTMLInputElement;
+    element.value = loaderData.data[numItem].empresaCliente.rucEmpresa || "";
   }
 
-  async function handleSubmitActualizaUsuario(event) {
+  async function handleSubmitActualizaCliente(event) {
     const date = new Date(event.target.fechaNacimiento.value);
     let dia = date.getDate() < 10 ? "0" + date.getDate() : date.getDate();
     let mes =
@@ -75,36 +64,37 @@ export default function Usuarios({ loaderData }: { loaderData: any }) {
         ? "0" + (date.getMonth() + 1)
         : date.getMonth() + 1;
     let anio = date.getFullYear();
-    let userDate = anio + "-" + mes + "-" + dia;
+    let clienteDate = anio + "-" + mes + "-" + dia;
     event.preventDefault();
-    const res = await fetch("http://localhost:8090/api/v1/usuario/registra", {
+    const res = await fetch("http://localhost:8090/api/v1/cliente/registra", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        idUsuario: event.target.idUsuario.value,
-        nombreUsuario: event.target.nombre.value,
-        correoUsuario: event.target.correo.value,
-        claveUsuario: event.target.clave.value,
-        telefonoUsuario: event.target.telefono.value,
-        saltUsuario: event.target.sUsu.value,
-        fechaNacimientoUsuario: userDate,
-        tipoUsuario: {
-          idTipo: event.target.tipo.value,
+        numCliente: event.target.numCliente.value,
+        tipoDocumentocliente: {
+          idTipo: event.target.tipoDocumento.value,
         },
-        estadoUsuario: event.target.activo.checked,
+        documentoCliente: event.target.numeroDocumento.value,
+        nombresCliente: event.target.nombre.value,
+        fechaNacimientoCliente: clienteDate,
+        correoCliente: event.target.correo.value,
+        telefonoCliente: event.target.telefono.value,
+        empresaCliente: {
+          rucEmpresa: event.target.empresa.value,
+        },
       }),
     });
 
     if (res.ok) {
-      alert("Usuario actualizado correctamente");
-      document.getElementById("formRegistroUsuario")?.reset();
+      alert("Cliente actualizado correctamente");
+      document.getElementById("formActualizaCliente")?.reset();
       const modalElement = document.getElementById("default-modal");
       modalElement?.classList.toggle("hidden");
       navigate(0);
     } else {
-      alert("Error al actualizar usuario");
+      alert("Error al actualizar cliente");
     }
   }
 
@@ -144,30 +134,22 @@ export default function Usuarios({ loaderData }: { loaderData: any }) {
                 </div>
               </form>
             </div>
-            <div className="w-full md:w-auto flex flex-col md:flex-row space-y-2 md:space-y-0 items-stretch md:items-center justify-end md:space-x-3 flex-shrink-0">
-              <Link
-                to="/dashboard/mantenimiento/usuarios/registro"
-                className="text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm px-5 py-2.5 text-center me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-              >
-                Agregar
-              </Link>
-            </div>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
               <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                 <tr>
                   <th scope="col" className="px-4 py-3">
-                    idUsuario
+                    Número
                   </th>
                   <th scope="col" className="px-4 py-3">
-                    Nombre Usuario
+                    Nombre Cliente
                   </th>
                   <th scope="col" className="px-4 py-3">
-                    Correo Usuario
+                    Correo Cliente
                   </th>
                   <th scope="col" className="px-4 py-3">
-                    Tipo Usuario
+                    Documento Cliente
                   </th>
                   <th scope="col" className="px-4 py-3">
                     Acciones
@@ -175,37 +157,19 @@ export default function Usuarios({ loaderData }: { loaderData: any }) {
                 </tr>
               </thead>
               <tbody>
-                {dataUsuarios &&
-                  dataUsuarios.map((usuario: any, index: number) => (
+                {loaderData.data &&
+                  loaderData.data.map((cliente: any, index: number) => (
                     <tr className="border-b dark:border-gray-700">
                       <th
                         scope="row"
                         className="px-4 py-3 font-medium text-gray-900 whitespace-nowrap dark:text-white"
                       >
-                        {usuario.idUsuario}
+                        {cliente.numCliente}
                       </th>
-                      <td className="px-4 py-3">{usuario.nombreUsuario}</td>
-                      <td className="px-4 py-3">{usuario.correoUsuario}</td>
+                      <td className="px-4 py-3">{cliente.nombresCliente}</td>
+                      <td className="px-4 py-3">{cliente.correoCliente}</td>
+                      <td className="px-4 py-3">{cliente.documentoCliente}</td>
                       <td className="px-4 py-3">
-                        {usuario.tipoUsuario.descripcionTipo}
-                      </td>
-                      <td className="px-4 py-3">
-                        {usuario.estadoUsuario === true ? (
-                          <button
-                            type="button"
-                            className="text-white bg-green-700 hover:bg-green-800 focus:outline-none focus:ring-4 focus:ring-green-300 font-medium rounded-full text-sm px-5 py-2.5 text-center me-2 mb-2 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800"
-                          >
-                            Activo
-                          </button>
-                        ) : (
-                          <button
-                            type="button"
-                            className="text-white bg-red-700 hover:bg-red-800 focus:outline-none focus:ring-4 focus:ring-red-300 font-medium rounded-full text-sm px-5 py-2.5 text-center me-2 mb-2 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-900"
-                          >
-                            Inactivo
-                          </button>
-                        )}
-
                         <button
                           type="button"
                           className="text-white bg-yellow-400 hover:bg-yellow-500 focus:outline-none focus:ring-4 focus:ring-yellow-300 font-medium rounded-full text-sm px-5 py-2.5 text-center me-2 mb-2 dark:focus:ring-yellow-900"
@@ -340,7 +304,7 @@ export default function Usuarios({ loaderData }: { loaderData: any }) {
           <div className="relative bg-white rounded-lg shadow dark:bg-gray-700">
             <div className="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
               <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
-                Editar Usuario
+                Editar Cliente
               </h3>
               <button
                 type="button"
@@ -369,28 +333,28 @@ export default function Usuarios({ loaderData }: { loaderData: any }) {
             <div className="mx-auto my-10 h-fit w-full bg-white rounded-lg shadow dark:border md:mt-0 sm:max-w-md xl:p-0 dark:bg-gray-800 dark:border-gray-700">
               <div className="p-6 space-y-4 md:space-y-6 sm:p-8 h-fit">
                 <h1 className="text-xl font-bold text-center leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white">
-                  Actualiza Usuario
+                  Actualiza Cliente
                 </h1>
                 <form
                   className="space-y-4 md:space-y-6"
                   method="POST"
-                  id="formRegistroUsuario"
-                  onSubmit={handleSubmitActualizaUsuario}
+                  id="formActualizaCliente"
+                  onSubmit={handleSubmitActualizaCliente}
                 >
                   <div>
                     <label
-                      htmlFor="idUsuario"
+                      htmlFor="numCliente"
                       className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
                     >
-                      ID Usuario
+                      Número Cliente
                     </label>
                     <input
                       type="text"
-                      name="idUsuario"
-                      id="idUsuario"
+                      name="numCliente"
+                      id="numCliente"
                       className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                      placeholder="TAMAÑO : 6"
                       required
+                      disabled
                     />
                   </div>
                   <div>
@@ -398,7 +362,7 @@ export default function Usuarios({ loaderData }: { loaderData: any }) {
                       htmlFor="nombre"
                       className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
                     >
-                      Nombres del Usuario
+                      Nombres
                     </label>
                     <input
                       type="text"
@@ -414,7 +378,7 @@ export default function Usuarios({ loaderData }: { loaderData: any }) {
                       htmlFor="correo"
                       className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
                     >
-                      Correo del usuario
+                      Correo
                     </label>
                     <input
                       type="email"
@@ -445,7 +409,7 @@ export default function Usuarios({ loaderData }: { loaderData: any }) {
                       htmlFor="telefono"
                       className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
                     >
-                      Telefono del Usuario
+                      Telefono
                     </label>
                     <input
                       type="number"
@@ -458,52 +422,21 @@ export default function Usuarios({ loaderData }: { loaderData: any }) {
                   </div>
                   <div>
                     <label
-                      htmlFor="clave"
+                      htmlFor="tipoDocumento"
                       className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
                     >
-                      Clave de usuario
-                    </label>
-                    <input
-                      type="password"
-                      name="clave"
-                      id="clave"
-                      placeholder="*********"
-                      className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                      required
-                    />
-                  </div>
-                  <input type="hidden" value={""} name="sUsu" id="sUsu" />
-                  <div>
-                    <label
-                      htmlFor="confirmarClave"
-                      className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                    >
-                      Clave de usuario
-                    </label>
-                    <input
-                      type="password"
-                      name="confirmarClave"
-                      id="confirmarClave"
-                      placeholder="*********"
-                      className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label
-                      htmlFor="tipo"
-                      className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                    >
-                      Tipo Usuario
+                      Tipo Documento
                     </label>
                     <select
-                      id="tipo"
-                      name="tipo"
+                      id="tipoDocumento"
+                      name="tipoDocumento"
                       className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                     >
-                      <option selected>Tipo de Usuario</option>
+                      <option value={-1} selected>
+                        Tipo de Documento
+                      </option>
                       {loaderData.tipo &&
-                        loaderData.tipo.map((tipo) => (
+                        loaderData.tipo.map((tipo: any) => (
                           <option key={tipo.idTipo} value={tipo.idTipo}>
                             {tipo.descripcionTipo}
                           </option>
@@ -511,25 +444,51 @@ export default function Usuarios({ loaderData }: { loaderData: any }) {
                     </select>
                   </div>
                   <div>
-                    <label className="inline-flex items-center cursor-pointer">
-                      <input
-                        type="checkbox"
-                        id="activo"
-                        name="activo"
-                        value={0}
-                        className="sr-only peer"
-                      />
-                      <div className="relative w-11 h-6 bg-gray-200 rounded-full peer peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
-                      <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">
-                        Activo
-                      </span>
+                    <label
+                      htmlFor="numeroDocumento"
+                      className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                    >
+                      Número de Documento
                     </label>
+                    <input
+                      type="text"
+                      name="numeroDocumento"
+                      id="numeroDocumento"
+                      placeholder="74562156"
+                      className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                      required
+                    />
                   </div>
+                  <div>
+                    <label
+                      htmlFor="empresa"
+                      className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                    >
+                      Empresa
+                    </label>
+                    <select
+                      id="empresa"
+                      name="empresa"
+                      className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                    >
+                      <option selected>Empresa</option>
+                      {loaderData.empresa &&
+                        loaderData.empresa.map((empresa: any) => (
+                          <option
+                            key={empresa.rucEmpresa}
+                            value={empresa.rucEmpresa}
+                          >
+                            {empresa.razonSocialEmpresa}
+                          </option>
+                        ))}
+                    </select>
+                  </div>
+
                   <button
                     type="submit"
                     className=" text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm px-5 py-2.5 text-center me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 w-full"
                   >
-                    Actualizar Usuario
+                    Actualizar Cliente
                   </button>
                 </form>
               </div>

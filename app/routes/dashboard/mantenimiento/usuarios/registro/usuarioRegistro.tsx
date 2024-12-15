@@ -12,7 +12,13 @@ export async function loader() {
 export default function Dashboard({ loaderData }) {
   async function handleSubmit(event) {
     const date = new Date(event.target.fechaNacimiento.value);
-
+    let dia = date.getDate() < 10 ? "0" + date.getDate() : date.getDate();
+    let mes =
+      date.getMonth() + 1 < 10
+        ? "0" + (date.getMonth() + 1)
+        : date.getMonth() + 1;
+    let anio = date.getFullYear();
+    let userDate = anio + "-" + mes + "-" + dia;
     event.preventDefault();
     const res = await fetch("http://localhost:8090/api/v1/usuario/registra", {
       method: "POST",
@@ -26,12 +32,7 @@ export default function Dashboard({ loaderData }) {
         claveUsuario: event.target.clave.value,
         telefonoUsuario: event.target.telefono.value,
         saltUsuario: "as3d5as1h3",
-        fechaNacimientoUsuario:
-          date.getFullYear() +
-          "-" +
-          (date.getMonth() + 1) +
-          "-" +
-          date.getDate(),
+        fechaNacimientoUsuario: userDate,
         tipoUsuario: {
           idTipo: event.target.tipo.value,
         },
@@ -48,10 +49,10 @@ export default function Dashboard({ loaderData }) {
   }
 
   return (
-    <section className="bg-gray-50 dark:bg-gray-900">
-      <div className="flex flex-col items-center justify-center px-6 py-8 mx-auto md:h-screen lg:py-0">
-        <div className="w-full bg-white rounded-lg shadow dark:border md:mt-0 sm:max-w-md xl:p-0 dark:bg-gray-800 dark:border-gray-700">
-          <div className="p-6 space-y-4 md:space-y-6 sm:p-8">
+    <section className="bg-gray-50 dark:bg-gray-900 h-fit px-6 py-8">
+      <div className="flex flex-col items-center mx-auto md:h-screen lg:py-0 h-fit">
+        <div className=" h-fit w-full bg-white rounded-lg shadow dark:border md:mt-0 sm:max-w-md xl:p-0 dark:bg-gray-800 dark:border-gray-700">
+          <div className="p-6 space-y-4 md:space-y-6 sm:p-8 h-fit">
             <Link to={"/dashboard/mantenimiento/usuarios"}>
               <button type="button">Volver</button>
             </Link>

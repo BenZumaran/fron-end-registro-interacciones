@@ -1,6 +1,24 @@
+import { useNavigate } from "react-router";
 import "./inicioSesion.css";
 export default function Inicio() {
-  function inicioSesion(formData) {}
+  const navigate = useNavigate();
+  async function inicioSesion(event: any) {
+    event.preventDefault();
+    const res = await fetch(
+      "http://localhost:8090/api/v1/usuario?id=" + event.target.usuario.value
+    );
+    if (res.ok) {
+      const data = await res.json();
+      if (data.claveUsuario === event.target.clave.value) {
+        document.getElementById("ingresoUsuario")?.reset();
+        navigate("/dashboard");
+      } else {
+        alert("Contraseña incorrecta");
+      }
+    } else {
+      alert("Usuario no encontrado");
+    }
+  }
   return (
     <>
       <div className="flex min-h-full flex-1 flex-col justify-center px-6 py-12 lg:px-8">
@@ -12,21 +30,26 @@ export default function Inicio() {
         </div>
 
         <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
-          <form action="#" method="POST" className="space-y-6">
+          <form
+            method="POST"
+            name="ingresoUsuario"
+            className="space-y-6"
+            onSubmit={inicioSesion}
+          >
             <div>
               <label
-                htmlFor="email"
+                htmlFor="usuario"
                 className="block text-sm/6 font-medium text-gray-900"
               >
                 Código de Usuario
               </label>
               <div className="mt-2">
                 <input
-                  id="email"
-                  name="email"
-                  type="email"
+                  id="usuario"
+                  name="usuario"
+                  type="text"
                   required
-                  autoComplete="email"
+                  autoComplete="usuario"
                   className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
                 />
               </div>
@@ -35,7 +58,7 @@ export default function Inicio() {
             <div>
               <div className="flex items-center justify-between">
                 <label
-                  htmlFor="password"
+                  htmlFor="clave"
                   className="block text-sm/6 font-medium text-gray-900"
                 >
                   Clave
@@ -51,11 +74,11 @@ export default function Inicio() {
               </div>
               <div className="mt-2">
                 <input
-                  id="password"
-                  name="password"
+                  id="clave"
+                  name="clave"
                   type="password"
                   required
-                  autoComplete="current-password"
+                  autoComplete="current-clave"
                   className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
                 />
               </div>

@@ -1,18 +1,91 @@
 import { useEffect, useState } from "react";
 import type { Route } from "./+types/empresas";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 
 export async function loader() {
   const res = await fetch("http://localhost:8090/api/v1/empresa/lista");
   if (!res.ok) {
-    throw new Error("No se pudo obtener los datos");
+    throw new Error("No se pudo obtener los datos de empresas");
+  }
+  const resSuscripcion = await fetch(
+    "http://localhost:8090/api/v1/suscripcion/lista"
+  );
+  if (!res.ok) {
+    throw new Error("No se pudo obtener los datos de suscripcion");
   }
   const data = await res.json();
-  return { data: data };
+  const suscripcion = await resSuscripcion.json();
+  return { data: data, suscripcion: suscripcion };
 }
 
-export default function Empresas({ loaderData }) {
+export default function Empresas({ loaderData }: { loaderData: any }) {
   const [dataEmpresas, setDataEmpresas] = useState(loaderData.data);
+
+  const navigate = useNavigate();
+
+  function modal(numItem: number) {
+    const modalElement = document.getElementById("default-modal");
+    modalElement?.classList.toggle("hidden");
+
+    if (numItem === -1) {
+      const formElement = document.getElementById(
+        "formRegistroEmpresa"
+      ) as HTMLFormElement | null;
+      formElement?.reset();
+      return;
+    }
+
+    const rucEmpresaElement = document.getElementById(
+      "rucEmpresa"
+    ) as HTMLInputElement;
+    rucEmpresaElement.value = loaderData.data[numItem].rucEmpresa;
+    const razonSocialElement = document.getElementById(
+      "razonSocial"
+    ) as HTMLInputElement;
+    razonSocialElement.value = loaderData.data[numItem].razonSocialEmpresa;
+    const suscripcionElement = document.getElementById(
+      "suscripcion"
+    ) as HTMLInputElement;
+    suscripcionElement.value =
+      loaderData.data[numItem].suscripcionEmpresa.numSuscripcion;
+    const activoElement = document.getElementById("activo") as HTMLInputElement;
+    loaderData.data[numItem].estadoEmpresa &&
+      ((activoElement.value = "1"), (activoElement.checked = true));
+    const cantidadLicenciasElement = document.getElementById(
+      "cantidadLicencias"
+    ) as HTMLInputElement;
+    cantidadLicenciasElement.value =
+      loaderData.data[numItem].cantidadLicenciasEmpresa;
+  }
+
+  async function handleSubmitEditarEmpresa(event: any) {
+    event.preventDefault();
+    const res = await fetch("http://localhost:8090/api/v1/empresa/registra", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        rucEmpresa: event.target.rucEmpresa.value,
+        estadoEmpresa: event.target.activo.checked,
+        razonSocialEmpresa: event.target.razonSocial.value,
+        cantidadLicenciasEmpresa: event.target.cantidadLicencias.value,
+        suscripcionEmpresa: {
+          numSuscripcion: event.target.suscripcion.value,
+        },
+      }),
+    });
+
+    if (res.ok) {
+      alert("Empresa actualizada correctamente");
+      document.getElementById("formRegistroEmpresa")?.reset();
+      const modalElement = document.getElementById("default-modal");
+      modalElement?.classList.toggle("hidden");
+      navigate(0);
+    } else {
+      alert("Error al actualizar la empresa");
+    }
+  }
 
   return (
     <section className="bg-gray-50 dark:bg-gray-900 p-3 sm:p-5">
@@ -82,8 +155,8 @@ export default function Empresas({ loaderData }) {
               </thead>
               <tbody>
                 {dataEmpresas &&
-                  dataEmpresas.map((empresa) => (
-                    <tr className="border-b dark:border-gray-700">
+                  dataEmpresas.map((empresa: any, index: number) => (
+                    <tr className="border-b dark:border-gray-700" key={index}>
                       <th
                         scope="row"
                         className="px-4 py-3 font-medium text-gray-900 whitespace-nowrap dark:text-white"
@@ -108,11 +181,7 @@ export default function Empresas({ loaderData }) {
                         ) : (
                           <button
                             type="button"
-                            className="hidden text-white bg-red-700 hover:bg-red-800 focus:outline-none focus:ring-4 focus:ring-red-300 font-medium rounded-full text-sm px-5 py-2.5 text-center me-2 mb-2 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-900"
-                            value={"red"}
-                            onClick={(e) => {
-                              console.log(e.target.value);
-                            }}
+                            className="text-white bg-red-700 hover:bg-red-800 focus:outline-none focus:ring-4 focus:ring-red-300 font-medium rounded-full text-sm px-5 py-2.5 text-center me-2 mb-2 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-900"
                           >
                             Inactivo
                           </button>
@@ -121,6 +190,7 @@ export default function Empresas({ loaderData }) {
                         <button
                           type="button"
                           className="text-white bg-yellow-400 hover:bg-yellow-500 focus:outline-none focus:ring-4 focus:ring-yellow-300 font-medium rounded-full text-sm px-5 py-2.5 text-center me-2 mb-2 dark:focus:ring-yellow-900"
+                          onClick={() => modal(index)}
                         >
                           Editar
                         </button>
@@ -232,6 +302,152 @@ export default function Empresas({ loaderData }) {
             </ul>
           </nav>
           */}
+        </div>
+      </div>
+
+      <div
+        id="default-modal"
+        tabIndex={-1}
+        aria-hidden="true"
+        className=" hidden overflow-y-auto overflow-x-hidden z-50 justify-center items-center w-full h-full md:inset-0 h-[calc(100%-1rem)]"
+        style={{
+          position: "fixed",
+          padding: "10vh 28vw",
+          height: "100vh",
+          backgroundColor: "rgba(0, 0, 0, 0.5)",
+        }}
+      >
+        <div className="relative p-4 w-full max-w-2xl max-h-full">
+          <div className="relative bg-white rounded-lg shadow dark:bg-gray-700">
+            <div className="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+                Editar Empresa
+              </h3>
+              <button
+                type="button"
+                className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
+                data-modal-hide="default-modal"
+                onClick={() => modal(-1)}
+              >
+                <svg
+                  className="w-3 h-3"
+                  aria-hidden="true"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 14 14"
+                >
+                  <path
+                    stroke="currentColor"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"
+                  />
+                </svg>
+                <span className="sr-only">Close modal</span>
+              </button>
+            </div>
+            <div className="mx-auto w-full bg-white rounded-lg shadow dark:border md:mt-0 sm:max-w-md xl:p-0 dark:bg-gray-800 dark:border-gray-700">
+              <div className="p-8 space-y-4 md:space-y-6 sm:p-8">
+                <h1 className="text-xl font-bold text-center leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white">
+                  Ingresa una Empresa
+                </h1>
+                <form
+                  className="space-y-4 md:space-y-6"
+                  method="POST"
+                  onSubmit={handleSubmitEditarEmpresa}
+                  id="formRegistroEmpresa"
+                >
+                  <div>
+                    <label
+                      htmlFor="rucEmpresa"
+                      className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                    >
+                      Ruc Empresa
+                    </label>
+                    <input
+                      type="number"
+                      size={11}
+                      name="rucEmpresa"
+                      id="rucEmpresa"
+                      className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                      placeholder="20123456789"
+                      required
+                    />
+                  </div>
+                  <input
+                    type="hidden"
+                    value=""
+                    name="cantidadLicencias"
+                    id="cantidadLicencias"
+                  />
+                  <div>
+                    <label
+                      htmlFor="razonSocial"
+                      className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                    >
+                      Razón Social
+                    </label>
+                    <input
+                      type="text"
+                      name="razonSocial"
+                      id="razonSocial"
+                      placeholder="Nombre de la Empresa"
+                      className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label
+                      htmlFor="licencia"
+                      className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                    >
+                      Elige una suscripcion
+                    </label>
+                    <select
+                      id="suscripcion"
+                      name="suscripcion"
+                      className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                    >
+                      <option selected>Elige una suscripcion</option>
+                      {loaderData.suscripcion &&
+                        loaderData.suscripcion.map((suscripcion: any) => (
+                          <option
+                            key={suscripcion.numSuscripcion}
+                            value={suscripcion.numSuscripcion}
+                          >
+                            {suscripcion.nombreSuscripcion}
+                          </option>
+                        ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        id="activo"
+                        name="activo"
+                        value={0}
+                        className="sr-only peer"
+                      />
+                      <div className="relative w-11 h-6 bg-gray-200 rounded-full peer peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                      <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">
+                        Activo
+                      </span>
+                    </label>
+                  </div>
+
+                  <button
+                    type="submit"
+                    className=" text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm px-5 py-2.5 text-center me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 w-full"
+                  >
+                    Actualizar Empresa
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </section>
