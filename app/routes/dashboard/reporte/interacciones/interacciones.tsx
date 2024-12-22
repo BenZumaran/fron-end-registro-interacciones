@@ -1,6 +1,4 @@
-import { useEffect, useState } from "react";
 import type { Route } from "./+types/empresas";
-import { Link, useNavigate } from "react-router";
 
 export async function loader() {
   const res = await fetch("http://localhost:8090/api/v1/interaccion/lista");

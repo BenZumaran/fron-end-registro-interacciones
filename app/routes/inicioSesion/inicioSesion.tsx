@@ -1,5 +1,4 @@
 import { useNavigate } from "react-router";
-import "./inicioSesion.css";
 export default function Inicio() {
   const navigate = useNavigate();
   async function inicioSesion(event: any) {

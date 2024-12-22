@@ -49,7 +49,4 @@ export default {
 
     },
   },
-  plugins: [
-    require('flowbite/plugin'),
-  ],
 } satisfies Config;
